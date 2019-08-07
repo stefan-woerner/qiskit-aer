@@ -93,21 +93,11 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
 
-    def test_measure_multi_qubit(self):
-        """Test StatevectorSimulator multi-qubit measure with deterministic counts"""
-        qobj = ref_measure.measure_circuits_qobj_deterministic(allow_sampling=True)
-        circuits = [experiment.header.name for experiment in qobj.experiments]
-        targets = ref_measure.measure_statevector_qobj_deterministic()
-        job = StatevectorSimulator().run(qobj)
-        result = job.result()
-        self.is_completed(result)
-        self.compare_statevector(result, circuits, targets)
-
     # ---------------------------------------------------------------------
     # Test conditional
     # ---------------------------------------------------------------------
-    def test_conditional_1bit(self):
-        """Test conditional operations on 1-bit conditional register."""
+    def test_conditional_gate_1bit(self):
+        """Test conditional gates on 1-bit conditional register."""
         circuits = ref_conditionals.conditional_circuits_1bit(final_measure=False)
         targets = ref_conditionals.conditional_statevector_1bit()
         job = execute(circuits, StatevectorSimulator(), shots=1)
@@ -115,9 +105,29 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
 
-    def test_conditional_2bit(self):
-        """Test conditional operations on 2-bit conditional register."""
+    def test_conditional_unitary_1bit(self):
+        """Test conditional unitaries on 1-bit conditional register."""
+        circuits = ref_conditionals.conditional_circuits_1bit(final_measure=False,
+                                                              conditional_type='unitary')
+        targets = ref_conditionals.conditional_statevector_1bit()
+        job = execute(circuits, StatevectorSimulator(), shots=1)
+        result = job.result()
+        self.is_completed(result)
+        self.compare_statevector(result, circuits, targets)
+
+    def test_conditional_gate_2bit(self):
+        """Test conditional gates on 2-bit conditional register."""
         circuits = ref_conditionals.conditional_circuits_2bit(final_measure=False)
+        targets = ref_conditionals.conditional_statevector_2bit()
+        job = execute(circuits, StatevectorSimulator(), shots=1)
+        result = job.result()
+        self.is_completed(result)
+        self.compare_statevector(result, circuits, targets)
+
+    def test_conditional_unitary_2bit(self):
+        """Test conditional unitary on 2-bit conditional register."""
+        circuits = ref_conditionals.conditional_circuits_2bit(final_measure=False,
+                                                              conditional_type='unitary')
         targets = ref_conditionals.conditional_statevector_2bit()
         job = execute(circuits, StatevectorSimulator(), shots=1)
         result = job.result()
@@ -140,7 +150,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test h-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.h_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.h_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -167,7 +178,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test h-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.h_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_1q_clifford.h_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -197,7 +209,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test x-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.x_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.x_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -206,7 +219,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test x-gate gate circuits compiling to u3,cx"""
         circuits = ref_1q_clifford.x_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.x_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -227,7 +241,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test z-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.z_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.z_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -236,7 +251,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test z-gate gate circuits compiling to u3,cx"""
         circuits = ref_1q_clifford.z_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.z_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -257,7 +273,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test y-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.y_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.y_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -266,7 +283,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test y-gate gate circuits compiling to u3, cx."""
         circuits = ref_1q_clifford.y_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.y_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -287,7 +305,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test s-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.s_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.s_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -296,7 +315,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test s-gate gate circuits compiling to u3,cx"""
         circuits = ref_1q_clifford.s_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.s_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -314,7 +334,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test s-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.s_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_1q_clifford.s_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -323,7 +344,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test s-gate gate circuits compiling to u3,cx"""
         circuits = ref_1q_clifford.s_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_1q_clifford.s_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -344,7 +366,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test sdg-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.sdg_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.sdg_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -353,7 +376,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test sdg-gate gate circuits compiling to u3,cx"""
         circuits = ref_1q_clifford.sdg_gate_circuits_deterministic(final_measure=False)
         targets = ref_1q_clifford.sdg_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -371,7 +395,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test sdg-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_1q_clifford.sdg_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_1q_clifford.sdg_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -380,7 +405,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test sdg-gate gate circuits compiling to u3,cx"""
         circuits = ref_1q_clifford.sdg_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_1q_clifford.sdg_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -401,7 +427,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cx-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_2q_clifford.cx_gate_circuits_deterministic(final_measure=False)
         targets = ref_2q_clifford.cx_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -410,7 +437,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cx-gate gate circuits compiling to u3,cx"""
         circuits = ref_2q_clifford.cx_gate_circuits_deterministic(final_measure=False)
         targets = ref_2q_clifford.cx_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -428,7 +456,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cx-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_2q_clifford.cx_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_2q_clifford.cx_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -437,7 +466,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cx-gate gate circuits compiling to u3,cx"""
         circuits = ref_2q_clifford.cx_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_2q_clifford.cx_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -458,7 +488,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cz-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_2q_clifford.cz_gate_circuits_deterministic(final_measure=False)
         targets = ref_2q_clifford.cz_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -467,7 +498,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cz-gate gate circuits compiling to u3,cx"""
         circuits = ref_2q_clifford.cz_gate_circuits_deterministic(final_measure=False)
         targets = ref_2q_clifford.cz_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -485,7 +517,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cz-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_2q_clifford.cz_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_2q_clifford.cz_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -494,7 +527,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test cz-gate gate circuits compiling to u3,cx"""
         circuits = ref_2q_clifford.cz_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_2q_clifford.cz_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -515,7 +549,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test swap-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_2q_clifford.swap_gate_circuits_deterministic(final_measure=False)
         targets = ref_2q_clifford.swap_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -524,7 +559,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test swap-gate gate circuits compiling to u3,cx"""
         circuits = ref_2q_clifford.swap_gate_circuits_deterministic(final_measure=False)
         targets = ref_2q_clifford.swap_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -542,7 +578,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test swap-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_2q_clifford.swap_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_2q_clifford.swap_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -551,7 +588,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test swap-gate gate circuits compiling to u3,cx"""
         circuits = ref_2q_clifford.swap_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_2q_clifford.swap_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -572,7 +610,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test t-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_non_clifford.t_gate_circuits_deterministic(final_measure=False)
         targets = ref_non_clifford.t_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -581,7 +620,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test t-gate gate circuits compiling to u3,cx"""
         circuits = ref_non_clifford.t_gate_circuits_deterministic(final_measure=False)
         targets = ref_non_clifford.t_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -599,7 +639,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test t-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_non_clifford.t_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_non_clifford.t_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -608,7 +649,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test t-gate gate circuits compiling to u3,cx"""
         circuits = ref_non_clifford.t_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_non_clifford.t_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -629,7 +671,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test tdg-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_non_clifford.tdg_gate_circuits_deterministic(final_measure=False)
         targets = ref_non_clifford.tdg_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -638,7 +681,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test tdg-gate gate circuits compiling to u3,cx"""
         circuits = ref_non_clifford.tdg_gate_circuits_deterministic(final_measure=False)
         targets = ref_non_clifford.tdg_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -656,7 +700,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test tdg-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_non_clifford.tdg_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_non_clifford.tdg_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -665,7 +710,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test tdg-gate gate circuits compiling to u3,cx"""
         circuits = ref_non_clifford.tdg_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_non_clifford.tdg_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -686,7 +732,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test ccx-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_non_clifford.ccx_gate_circuits_deterministic(final_measure=False)
         targets = ref_non_clifford.ccx_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -695,7 +742,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test ccx-gate gate circuits compiling to u3,cx"""
         circuits = ref_non_clifford.ccx_gate_circuits_deterministic(final_measure=False)
         targets = ref_non_clifford.ccx_gate_statevector_deterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -713,7 +761,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test ccx-gate gate circuits compiling to u1,u2,u3,cx"""
         circuits = ref_non_clifford.ccx_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_non_clifford.ccx_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u1', 'u2', 'u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u1', 'u2', 'u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -722,7 +771,8 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
         """Test ccx-gate gate circuits compiling to u3,cx"""
         circuits = ref_non_clifford.ccx_gate_circuits_nondeterministic(final_measure=False)
         targets = ref_non_clifford.ccx_gate_statevector_nondeterministic()
-        job = execute(circuits, StatevectorSimulator(), shots=1, basis_gates=['u3', 'cx'])
+        job = execute(circuits, StatevectorSimulator(), shots=1,
+                      basis_gates=['u3', 'cx'])
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
@@ -730,22 +780,11 @@ class TestStatevectorSimulator(common.QiskitAerTestCase):
     # ---------------------------------------------------------------------
     # Test unitary gate qobj instruction
     # ---------------------------------------------------------------------
-    def test_unitary_gate_real(self):
-        """Test unitary qobj instruction with real matrices."""
-        qobj = ref_unitary_gate.unitary_gate_circuits_real_deterministic(final_measure=False)
-        circuits = [experiment.header.name for experiment in qobj.experiments]
-        targets = ref_unitary_gate.unitary_gate_statevector_real_deterministic()
-        job = StatevectorSimulator().run(qobj)
-        result = job.result()
-        self.is_completed(result)
-        self.compare_statevector(result, circuits, targets)
-
-    def test_unitary_gate_complex(self):
-        """Test unitary qobj instruction with complex matrices."""
-        qobj = ref_unitary_gate.unitary_gate_circuits_complex_deterministic(final_measure=False)
-        circuits = [experiment.header.name for experiment in qobj.experiments]
-        targets = ref_unitary_gate.unitary_gate_statevector_complex_deterministic()
-        job = StatevectorSimulator().run(qobj)
+    def test_unitary_gate(self):
+        """Test simulation with unitary gate circuit instructions."""
+        circuits = ref_unitary_gate.unitary_gate_circuits_deterministic(final_measure=False)
+        targets = ref_unitary_gate.unitary_gate_statevector_deterministic()
+        job = execute(circuits, StatevectorSimulator(), shots=1)
         result = job.result()
         self.is_completed(result)
         self.compare_statevector(result, circuits, targets)
