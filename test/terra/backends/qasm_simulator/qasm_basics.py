@@ -30,7 +30,7 @@ class QasmBasicsTests:
         quantum_circuit = transpile(succeed_circuit, mocked_backend)
         qobj = assemble(quantum_circuit)
         result = mocked_backend.run(qobj).result()
-        self.is_completed(result)
+        self.assertSuccess(result)
 
     def test_simulation_failed(self):
         """Test the we properly manage simulation failures."""

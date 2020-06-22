@@ -34,6 +34,7 @@ Multiplication is done with the C wrapper of the fortran blas library.
 #include <complex>
 #include <iostream>
 #include <vector>
+#include <array>
 
 /*******************************************************************************
  *
@@ -41,7 +42,7 @@ Multiplication is done with the C wrapper of the fortran blas library.
  *
  ******************************************************************************/
 
-const char Trans[] = {'N', 'T', 'C'};
+const std::array<char, 3> Trans = {'N', 'T', 'C'};
 /*  Trans (input) CHARACTER*1.
                 On entry, TRANSA specifies the form of op( A ) to be used in the
    matrix multiplication as follows:
@@ -49,17 +50,17 @@ const char Trans[] = {'N', 'T', 'C'};
                         = 'T' transpose of A;
                         = 'C' hermitian conjugate of A.
 */
-const char UpLo[] = {'U', 'L'};
+const std::array<char, 2> UpLo = {'U', 'L'};
 /*  UpLo    (input) CHARACTER*1
                         = 'U':  Upper triangle of A is stored;
                         = 'L':  Lower triangle of A is stored.
 */
-const char Jobz[] = {'V', 'N'};
+const std::array<char, 2> Jobz = {'V', 'N'};
 /*  Jobz    (input) CHARACTER*1
                         = 'N':  Compute eigenvalues only;
                         = 'V':  Compute eigenvalues and eigenvectors.
 */
-const char Range[] = {'A', 'V', 'I'};
+const std::array<char, 3> Range = {'A', 'V', 'I'};
 /*  Range   (input) CHARACTER*1
                                 = 'A': all eigenvalues will be found.
                                 = 'V': all eigenvalues in the half-open interval
@@ -207,7 +208,7 @@ public:
                                 // sqrt(dims)
   matrix(const matrix<T> &m);
   matrix(const matrix<T> &m, const char uplo);
-
+  matrix(matrix<T>&& m); // move constructor
   // Initialize an empty matrix() to matrix(size_t  rows, size_t cols)
   void initialize(size_t rows, size_t cols);
   // Clear used memory
@@ -218,11 +219,12 @@ public:
 
   // Assignment operator
   matrix<T> &operator=(const matrix<T> &m);
+  matrix<T> &operator=(matrix<T> &&m); // Move assignment
   template <class S>
   matrix<T> &operator=(const matrix<S> &m); // Still would like to have real
                                             // assigend by complex -- take real
                                             // part
-
+  
   // Addressing elements by vector representation
   T &operator[](size_t element);
   T operator[](size_t element) const;
@@ -247,18 +249,19 @@ public:
   void resize(size_t row, size_t col); // sets the size of the underlying vector
   void SetOutputStyle(enum OutputStyle outputstyle); // sets the style the
                                                      // matrix is display by <<
-  T *GetMat() const; // gives you the address of element 0 then *(c+i) gives you
-                     // the ith element
+  // Access the array data pointer
+  const T* data() const noexcept { return mat_; }
+  T* data() noexcept { return mat_; }
 
 protected:
-  size_t rows_, cols_, size_, LD_;
+  size_t rows_ = 0, cols_ = 0, size_ = 0, LD_ = 0;
   // rows_ and cols_ are the rows and columns of the matrix
   // size_ = rows*colums dimensions of the vector representation
   // LD is the leading dimeonsion and for Column major order is in general eqaul
   // to rows
-  enum OutputStyle outputstyle_;
+  enum OutputStyle outputstyle_ = Matrix;
   // outputstyle_ is the output style used by <<
-  T *mat_;
+  T *mat_ = nullptr;
   // the ptr to the vector containing the matrix
 };
 
@@ -269,8 +272,7 @@ protected:
  ******************************************************************************/
 
 template <class T>
-inline matrix<T>::matrix()
-    : rows_(0), cols_(0), size_(0), LD_(0), outputstyle_(Matrix), mat_(nullptr) {}
+inline matrix<T>::matrix(){}
 // constructs an empty matrix using the ....
 template <class T>
 inline matrix<T>::matrix(size_t rows, size_t cols)
@@ -318,6 +320,15 @@ inline matrix<T>::matrix(const matrix<T> &rhs)
     mat_[p] = rhs.mat_[p];
   }
 }
+
+template <class T>
+inline matrix<T>::matrix(matrix<T>&& rhs)
+    : rows_(rhs.rows_), cols_(rhs.cols_), size_(rhs.size_), LD_(rows_),
+      outputstyle_(rhs.outputstyle_), mat_(rhs.mat_) {
+  rhs.mat_ = nullptr; // Remove pointer from RHS
+}
+
+
 template <class T>
 inline matrix<T>::matrix(const matrix<T> &rhs, const char uplo)
     : rows_(rhs.rows_), cols_(rhs.cols_), size_(rhs.size_), LD_(rows_),
@@ -384,6 +395,21 @@ template <class T> inline matrix<T>::~matrix() {
     delete[](mat_);
 }
 template <class T>
+inline matrix<T>& matrix<T>::operator=(matrix<T>&& rhs) {
+  // Delete any currently assigned memory
+  if (mat_ != nullptr) {
+    delete[](mat_);
+  }
+  rows_ = rhs.rows_;
+  cols_ = rhs.cols_;
+  size_ = rows_ * cols_;
+  LD_ = rhs.LD_;
+  mat_ = rhs.mat_;
+  rhs.mat_ = nullptr;
+  return *this;
+}
+
+template <class T>
 inline matrix<T> &matrix<T>::operator=(const matrix<T> &rhs) {
   // overloading the assignement operator
   // postcondition: normal assignment via copying has been performed;
@@ -419,7 +445,7 @@ inline matrix<T> &matrix<T>::operator=(const matrix<S> &rhs) {
   if (rows_ != rhs.GetRows() ||
       cols_ != rhs.GetColumns()) { // if the rows are different size delete
     // re-construct the matrix
-    if (mat_ != 0)
+    if (mat_ != nullptr)
       delete[](mat_);
     rows_ = rhs.GetRows();
     cols_ = rhs.GetColumns();
@@ -504,10 +530,7 @@ template <class T> inline bool matrix<T>::empty() const {
   // returns the size of the underlying vector
   return (size() == 0);
 }
-template <class T> inline T *matrix<T>::GetMat() const {
-  // returns the ptr for the matrix data
-  return mat_;
-}
+
 template <class T>
 inline void matrix<T>::SetOutputStyle(enum OutputStyle outputstyle) {
   // sets the outputstyle

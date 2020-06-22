@@ -213,11 +213,11 @@ private:
   std::string remap_string(const std::string key,
                            const std::unordered_map<uint_t, uint_t> &mapping) const;
 
-  // Helper function to try and convert an instruciton to superop matrix
+  // Helper function to try and convert an instruction to superop matrix
   // If conversion isn't possible this returns an empty matrix
   cmatrix_t op2superop(const Operations::Op &op) const;
 
-  // Try and convert an instruciton to unitary matrix
+  // Try and convert an instruction to unitary matrix
   // If conversion isn't possible this returns an empty matrix
   cmatrix_t op2unitary(const Operations::Op &op) const;
 
@@ -283,10 +283,15 @@ NoiseModel::NoiseOps NoiseModel::sample_noise(const Operations::Op &op,
 Circuit NoiseModel::sample_noise(const Circuit &circ,
                                  RngEngine &rng) const {
     bool noise_active = true; // set noise active to on-state
-    Circuit noisy_circ = circ; // copy input circuit
-    noisy_circ.measure_sampling_flag = false; // disable measurement opt flag
-    noisy_circ.ops.clear(); // delete ops
-    noisy_circ.ops.reserve(2 * circ.ops.size()); // just to be safe?
+    Circuit noisy_circ;
+    // Copy metadata
+    noisy_circ.seed = circ.seed;
+    noisy_circ.shots = circ.shots;
+    noisy_circ.header = circ.header;
+
+    // Reserve double length of ops just to be safe
+    noisy_circ.ops.reserve(2 * circ.ops.size());
+
     // Sample a noisy realization of the circuit
     for (const auto &op: circ.ops) {
       switch (op.type) {
@@ -321,6 +326,8 @@ Circuit NoiseModel::sample_noise(const Circuit &circ,
           break;
       }
     }
+    // Update circuit parameters
+    noisy_circ.set_params();
     return noisy_circ;
 }
 
@@ -601,16 +608,15 @@ void NoiseModel::sample_local_quantum_noise(const Operations::Op &op,
       // for gate operations we use the qubits as specified
       qubit_keys.push_back(op_qubits);
     }
-    for (size_t qs=0; qs < qubit_keys.size(); ++qs) {
-      auto iter_qubits = qubit_map.find(qubit_keys[qs]);
+    for(auto qubit_key: qubit_keys){
+      auto iter_qubits = qubit_map.find(qubit_key);
       if (iter_qubits != qubit_map.end() ||
           iter_default != qubit_map.end()) {
         auto &error_positions = (iter_qubits != qubit_map.end())
           ? iter_qubits->second
           : iter_default->second;
         for (auto &pos : error_positions) {
-          auto noise_ops = quantum_errors_[pos].sample_noise(string2reg(qubit_keys[qs]), rng,
-                                                             method_);
+          auto noise_ops = quantum_errors_[pos].sample_noise(string2reg(qubit_key), rng, method_);
           // Duplicate same sampled error operations
           if (quantum_errors_[pos].errors_after())
             noise_after.insert(noise_after.end(), noise_ops.begin(), noise_ops.end());

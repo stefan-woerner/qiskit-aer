@@ -17,6 +17,8 @@ Test circuits and reference outputs for measure instruction.
 
 import numpy as np
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
+from qiskit.quantum_info.random import random_unitary
+from qiskit.quantum_info import Statevector
 
 
 def unitary_gate_circuits_deterministic(final_measure=True):
@@ -171,4 +173,40 @@ def unitary_gate_unitary_deterministic():
                              [0, 0, 0, -1j],
                              [0, 1j, 0, 0],
                              [1j, 0, 0, 0]]))
+    return targets
+
+
+def unitary_random_gate_circuits_nondeterministic(final_measure=True):
+    """Unitary gate test circuits with random unitary gate and nondeterministic count output."""
+    # random_unitary seed = nq
+    circuits = []
+    for n in range(1, 5):
+        qr = QuantumRegister(n, 'qr')
+        if final_measure:
+            cr = ClassicalRegister(n, 'cr')
+            regs = (qr, cr)
+        else:
+            regs = (qr, )
+
+        circuit = QuantumCircuit(*regs)
+        circuit.unitary(random_unitary(2 ** n, seed=n), list(range(n)))
+        if final_measure:
+            circuit.barrier(qr)
+            circuit.measure(qr, cr)
+        circuits.append(circuit)
+
+    return circuits
+
+
+def unitary_random_gate_counts_nondeterministic(shots):
+    """Unitary gate test circuits with nondeterministic counts."""
+    # random_unitary seed = nq
+    targets = []
+    for n in range(1, 5):
+        unitary1 = random_unitary(2 ** n, seed=n)
+        state = Statevector.from_label(n * '0').evolve(unitary1)
+        state.seed(10)
+        counts = state.sample_counts(shots=shots)
+        hex_counts = {hex(int(key, 2)): val for key, val in counts.items()}
+        targets.append(hex_counts)
     return targets
